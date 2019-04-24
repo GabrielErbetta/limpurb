@@ -3,12 +3,7 @@ FROM ruby:2.6.3-alpine3.9
 WORKDIR /app
 ENV APP_ENV production
 
-RUN apk add --no-cache --update bash build-base cmake openssl-dev 
-# RUN apk add --no-cache --update bash build-base file libcurl mysql-client \
-#                                 mysql-dev nginx nodejs tzdata \
-#                                 ffmpeg imagemagick libjpeg-turbo-utils libxml2-dev libxslt-dev \
-#                                 libgcc libstdc++ libx11 glib libxrender libxext libintl libcrypto1.0 \
-#                                 libssl1.0 ttf-dejavu ttf-droid ttf-freefont ttf-liberation ttf-ubuntu-font-family
+RUN apk add --no-cache --update bash build-base cmake openssl-dev
 
 COPY Gemfile Gemfile.lock ./
 RUN gem install bundler && \
