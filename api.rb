@@ -4,7 +4,7 @@ require 'git'
 require 'logger'
 require 'pronto'
 require 'sinatra'
-require_relative 'config'
+require_relative 'init'
 require_relative 'helpers'
 
 # For checking if the api is alive
@@ -29,10 +29,12 @@ post '/sweep' do
     # checkout to branch
     # run pronto to master
 
-    repo.fetch('origin', ref: "#{pr_base}:origin/#{pr_base}")
-    repo.fetch('origin', ref: "pull/#{pr_number}/head:#{pr_number}")
-    repo.branch('pr-2050').checkout
-    Pronto.run('origin/master', '.', pronto_formatters)
+    repo.branch(pr_base).delete
+    repo.fetch('origin', ref: "#{pr_base}:#{pr_base}")
+
+    repo.fetch('origin', ref: "pull/#{pr_number}/head:pr-#{pr_number}")
+    repo.branch("pr-#{pr_number}").checkout
+    Pronto.run(pr_base, '.', pronto_formatters)
   elsif payload['action'] == 'synchronize'
     # save current HEAD
     # checkout to branch
