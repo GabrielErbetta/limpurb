@@ -30,9 +30,11 @@ post '/sweep' do
     # run pronto to master
 
     repo.fetch('origin')
-    repo.branch("origin#{pr_base}").checkout
+    repo.branch("origin/#{pr_base}").checkout
     repo.branch("pr-#{pr_number}").checkout
     repo.pull('origin', "pull/#{pr_number}/head")
+
+    ENV['PRONTO_PULL_REQUEST_ID'] = pr_number
     Pronto.run(pr_base, "repos/#{repo_owner}/#{repo_name}", pronto_formatters)
   elsif payload['action'] == 'synchronize'
     # save current HEAD
