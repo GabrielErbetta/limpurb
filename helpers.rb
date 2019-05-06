@@ -7,6 +7,7 @@ rescue JSON::ParserError
 end
 
 def load_git_repo(r_owner, r_name)
+  File.new("#{settings.root}/log/#{r_owner}_#{r_name}.log", 'a+')
   log = Logger.new("#{settings.root}/log/#{r_owner}_#{r_name}.log")
 
   begin

@@ -15,10 +15,10 @@ end
 # Sweeps the git repo
 post '/sweep' do
   payload = json_params
-  halt 200 unless payload['action'].in? %w[opened synchronize]
+  halt 200 unless %w[opened synchronize].include? payload['action']
 
   repo_owner = payload['repository']['owner']['login']
-  repo_name  = payload['repository']['full_name']
+  repo_name  = payload['repository']['name']
   pr_number  = payload['number']
   pr_base    = payload['pull_request']['base']['ref']
 
@@ -29,12 +29,11 @@ post '/sweep' do
     # checkout to branch
     # run pronto to master
 
-    repo.branch(pr_base).delete
-    repo.fetch('origin', ref: "#{pr_base}:#{pr_base}")
-
-    repo.fetch('origin', ref: "pull/#{pr_number}/head:pr-#{pr_number}")
+    repo.fetch('origin')
+    repo.branch("origin#{pr_base}").checkout
     repo.branch("pr-#{pr_number}").checkout
-    Pronto.run(pr_base, '.', pronto_formatters)
+    repo.pull('origin', "pull/#{pr_number}/head")
+    Pronto.run(pr_base, "repos/#{repo_owner}/#{repo_name}", pronto_formatters)
   elsif payload['action'] == 'synchronize'
     # save current HEAD
     # checkout to branch
