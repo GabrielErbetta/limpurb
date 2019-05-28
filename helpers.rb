@@ -7,9 +7,14 @@ rescue JSON::ParserError
 end
 
 def pronto_formatters
-  formatter = Pronto::Formatter::GithubPullRequestReviewFormatter.new
-  status_formatter = Pronto::Formatter::GithubStatusFormatter.new
-  [formatter, status_formatter]
+  formatters = []
+
+  # formatters << Pronto::Formatter::GithubFormatter.new
+  # formatters << Pronto::Formatter::GithubPullRequestFormatter.new
+  formatters << Pronto::Formatter::GithubPullRequestReviewFormatter.new
+  formatters << Pronto::Formatter::GithubStatusFormatter.new
+
+  formatters
 end
 
 def load_git_repo(r_owner, r_name)
@@ -29,23 +34,37 @@ end
 
 def process_opened_pr(repo_owner, repo_name, pr_number, pr_base)
   repo = load_git_repo repo_owner, repo_name
+  base = "pr-#{pr_number}-base"
+  head = "pr-#{pr_number}"
 
-  repo.branch("pr-#{pr_number}-base").delete rescue nil
-  repo.branch("pr-#{pr_number}").delete rescue nil
+  # Delets old branches (rescue avoids errors when branches don't exist already)
+  repo.branch(base).delete rescue nil
+  repo.branch(head).delete rescue nil
 
-  repo.fetch('origin', ref: "#{pr_base}:pr-#{pr_number}-base")
-  repo.fetch('origin', ref: "pull/#{pr_number}/head:pr-#{pr_number}")
-  repo.branch("pr-#{pr_number}").checkout
+  # Fetches head and base branches and checkouts to head
+  repo.fetch('origin', ref: "#{pr_base}:#{base}")
+  repo.fetch('origin', ref: "pull/#{pr_number}/head:#{head}")
+  repo.branch(head).checkout
 
   ENV['PRONTO_PULL_REQUEST_ID'] = pr_number.to_s
-  Pronto.run(pr_base, "repos/#{repo_owner}/#{repo_name}", pronto_formatters)
+  Pronto.run(base, "repos/#{repo_owner}/#{repo_name}", pronto_formatters)
 end
 
-def process_synchronize_pr(repo_owner, repo_name, pr_number, pr_base)
-  # TODO
+def process_synchronize_pr(repo_owner, repo_name, pr_number)
+  repo = load_git_repo repo_owner, repo_name
+  base = "pr-#{pr_number}-base"
+  head = "pr-#{pr_number}"
 
-  # save current HEAD
-  # checkout to branch
-  # update branch
-  # run pronto to HEAD
+  # Deletes old base branch and makes the current head the new base branch
+  repo.branch(base).delete rescue nil
+  repo.branch(head).checkout
+  repo.checkout(base, new_branch: true)
+
+  # Delets old head and fetches the head again
+  repo.branch(head).delete rescue nil
+  repo.fetch('origin', ref: "pull/#{pr_number}/head:#{head}")
+  repo.branch(head).checkout
+
+  ENV['PRONTO_PULL_REQUEST_ID'] = pr_number.to_s
+  Pronto.run(base, "repos/#{repo_owner}/#{repo_name}", pronto_formatters)
 end

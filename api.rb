@@ -23,13 +23,9 @@ post '/sweep' do
 
   case payload['action']
   when 'opened'
-    Thread.new do
-      process_opened_pr(repo_owner, repo_name, pr_number, pr_base)
-    end
+    Thread.new { process_opened_pr(repo_owner, repo_name, pr_number, pr_base) }
   when 'synchronize'
-    Thread.new do
-      process_synchronize_pr repo_owner, repo_name, pr_number, pr_base
-    end
+    Thread.new { process_synchronize_pr(repo_owner, repo_name, pr_number) }
   end
 
   halt 200
