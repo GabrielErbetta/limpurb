@@ -50,13 +50,19 @@ def process_opened_pr(repo_owner, repo_name, pr_number, pr_base)
   Pronto.run(base, "repos/#{repo_owner}/#{repo_name}", pronto_formatters)
 end
 
-def process_synchronize_pr(repo_owner, repo_name, pr_number)
+def process_sync_pr(repo_owner, repo_name, pr_number, pr_base)
   repo = load_git_repo repo_owner, repo_name
   base = "pr-#{pr_number}-base"
   head = "pr-#{pr_number}"
 
-  # Deletes old base branch and makes the current head the new base branch
-  repo.branch(base).delete rescue nil
+  # Deletes old base branch and runs process_opened_pr if it doesn't exists
+  begin
+    repo.branch(base).delete
+  rescue StandardError
+    return process_opened_pr(repo_owner, repo_name, pr_number, pr_base)
+  end
+
+  # Makes the current head the new base branch
   repo.branch(head).checkout
   repo.checkout(base, new_branch: true)
 

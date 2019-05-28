@@ -25,7 +25,7 @@ post '/sweep' do
   when 'opened'
     Thread.new { process_opened_pr(repo_owner, repo_name, pr_number, pr_base) }
   when 'synchronize'
-    Thread.new { process_synchronize_pr(repo_owner, repo_name, pr_number) }
+    Thread.new { process_sync_pr(repo_owner, repo_name, pr_number, pr_base) }
   end
 
   halt 200
