@@ -4,7 +4,7 @@
 source 'https://rubygems.org'
 ruby '2.6.6'
 
-gem 'git',            '~>1.5'
+gem 'git',            '~>1.11'
 gem 'pronto',         '~>0.10'
 gem 'pronto-rubocop', '~>0.10'
 gem 'sinatra',        '~>2.0'
